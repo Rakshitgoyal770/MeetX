@@ -4,8 +4,16 @@ import { JWT_SECRET } from '@repo/backend-common/config';
 import { middleware } from './middleware.js';
 import {CreateUserSchema, SignInSchema , CreateRoomSchema} from '@repo/common/types';
 import {prismaClient} from '@repo/db/client';
+import cors from 'cors';
+
+
 const app = express(); 
 app.use(express.json());
+app.use(cors({
+    origin: '*', // Adjust this to your frontend URL
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 
 app.get("/", (req, res) => {
@@ -53,7 +61,7 @@ app.post("/Signin", async (req, res) => {
     const parsedata = SignInSchema.safeParse(req.body);
     if(!parsedata.success){
         console.error("Validation error:", parsedata.error);
-        res.json({
+        res.status(400).json({
             msg : "Invalid data"
         })
         return;
@@ -66,7 +74,7 @@ app.post("/Signin", async (req, res) => {
     });
 
     if(!User){
-        res.json({
+        res.status(404).json({
             msg: "User not found Signin First"
         })
         return;
@@ -84,7 +92,7 @@ app.post("/Signin", async (req, res) => {
 app.post("/room", middleware, async (req, res) => {
     const parsedata = CreateRoomSchema.safeParse(req.body);
     if(!parsedata.success) {
-        res.json({
+        res.status(400).json({
             msg : "Invalid data"
         })
         return;
@@ -104,7 +112,7 @@ app.post("/room", middleware, async (req, res) => {
             msg : "Room created successfully"
         })
     } catch(e) {
-        res.json({
+        res.status(400).json({
             message : "Room with this name already exists" 
         })
     }
@@ -140,7 +148,7 @@ app.get("/room/:slug", middleware, async (req, res) => {
     res.json({ room });
 });
 
-app.listen(8000, () => {
+app.listen(8000, '0.0.0.0', () => {
     console.log('Server is running on port 8000');
 })
 
