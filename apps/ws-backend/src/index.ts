@@ -54,13 +54,13 @@ wss.on('connection', async (ws, request) => {
         userId: userId
     });
 
-    ws.on('message', async (message) => {
-        const parseData = JSON.parse(message as unknown as string);
-
-        // if(parseData.type === "join_room"){
-        //     const user = users.find(u => u.ws === ws);
-        //     user?.rooms.push(parseData.roomId);
-        // }
+    ws.on('message', async function message(data) {
+        let parseData;
+        if(typeof data !== "string"){
+            parseData = JSON.parse(data.toString());
+        } else {
+            parseData = JSON.parse(data);
+        }
         if (parseData.type === "join_room") {
             console.log("JOIN REQUEST:", parseData);
 
@@ -82,13 +82,13 @@ wss.on('connection', async (ws, request) => {
             if(!user){
                 return;
             }
-            user.rooms = user?.rooms.filter(r => r !== parseData.room);
+            user.rooms = user?.rooms.filter(r => r !== Number(parseData.room));
         }
 
         
 
         if(parseData.type === "chat"){
-            const roomId = parseData.roomId;
+            const roomId = Number(parseData.roomId);
             const message = parseData.message;
 
 
