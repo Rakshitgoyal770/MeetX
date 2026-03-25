@@ -96,7 +96,7 @@ function clearCanvus(shapes : Shapes[],canvas : HTMLCanvasElement, ctx : CanvasR
 }
 
 async function getExistingShapes(roomId: string) {
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MDMyZGZmMS1hYmQ2LTQwZWYtYWE1ZC1iOTg1Mzk5ZTZiMTYiLCJpYXQiOjE3NzQxOTEzMjcsImV4cCI6MTc3NDE5NDkyN30.ajnB75218HsG2NKoLw7bhrtCd66M8KHoVikCwHMm7I0";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MDMyZGZmMS1hYmQ2LTQwZWYtYWE1ZC1iOTg1Mzk5ZTZiMTYiLCJpYXQiOjE3NzQ0NjY5MDYsImV4cCI6MTc3NDQ3MDUwNn0.ZQ5Xy6sS8duAbymlGZZFHO9FRo-UFYAyBOpmnf-_EjA";
     if (!token) {
         return [];
     }
