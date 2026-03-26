@@ -14,6 +14,11 @@ export default function Canvas({
     const [Icon, setIcon] = useState<"rectangle" | "circle" | "line">("circle");
     const canvusRef = useRef<HTMLCanvasElement>(null);
     useEffect(() => {
+        // @ts-ignore
+        window.Icon = Icon;
+    }, [Icon]);
+
+    useEffect(() => {
             if(canvusRef.current) {
                 drawCanvus(canvusRef.current, roomId, socket);
             }

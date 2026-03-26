@@ -11,6 +11,12 @@ type Shapes = {
     centerx : number,
     centery : number,
     radius : number
+} | {
+    type :"line",
+    startx : number,
+    starty : number,
+    endx : number,
+    endy : number
 }
 
 export async function drawCanvus(canvus : HTMLCanvasElement,  roomId : string, socket:WebSocket) {
@@ -53,14 +59,43 @@ export async function drawCanvus(canvus : HTMLCanvasElement,  roomId : string, s
         const height = e.clientY - startY;
         clicked = false;
         console.log(e.clientX, e.clientY);
-        let shape : Shapes = {
+        let shape: Shapes = {
             type: "retangle",
             x: startX,
             y: startY,
             width: width,
             height: height
+        };
+        // @ts-ignore
+        const existingShape = window.Icon;
+        if (existingShape === "rectangle") {
+            shape = {
+                type: "retangle",
+                x: startX,
+                y: startY,
+                width: width,
+                height: height
+            };
+        } else if (existingShape === "circle") {
+            const centerX = startX + width/2;
+            const centerY = startY + height/2;
+            const radius = Math.sqrt((width*width + height*height))/2;
+            shape = {
+                type: "circle",
+                centerx: centerX,
+                centery: centerY,
+                radius: radius
+            };
+
+        } else if (existingShape === "line") {
+            shape = {
+                type: "line",
+                startx: startX,
+                starty: startY,
+                endx: e.clientX,
+                endy: e.clientY
+            }
         }
-        
         existingShapes.push(shape);
         if (socket.readyState === WebSocket.OPEN) {
             socket.send(JSON.stringify({
@@ -78,8 +113,31 @@ export async function drawCanvus(canvus : HTMLCanvasElement,  roomId : string, s
             const width = e.clientX - startX;
             const height = e.clientY - startY;
             clearCanvus(existingShapes, canvus, ctx);
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
-            ctx.strokeRect(startX, startY, width, height);
+            // @ts-ignore
+            if(window.Icon === "rectangle") {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.strokeRect(startX, startY, width, height);
+            }
+            // @ts-ignore
+            else if(window.Icon === "circle") {
+                const centerX = startX + width/2;
+                const centerY = startY + height/2;
+                const radius = Math.sqrt((width*width + height*height))/2;
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+                ctx.stroke();
+                ctx.closePath();
+            }
+            // @ts-ignore
+            else if(window.Icon === "line") {
+                ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(e.clientX, e.clientY);
+                ctx.stroke();
+                ctx.closePath();
+            }
         }
     });
 }
@@ -92,11 +150,27 @@ function clearCanvus(shapes : Shapes[],canvas : HTMLCanvasElement, ctx : CanvasR
             ctx.fillRect(shape.x, shape.y, shape.width, shape.height);
             ctx.strokeRect(shape.x, shape.y, shape.width, shape.height);
         }
+
+        else if(shape.type === "circle") {
+            ctx.beginPath();
+            ctx.arc(shape.centerx, shape.centery, shape.radius, 0, 2 * Math.PI);
+            ctx.fill();
+            ctx.stroke();
+            ctx.closePath();
+        }
+
+        else if(shape.type === "line") {
+            ctx.beginPath();
+            ctx.moveTo(shape.startx, shape.starty);
+            ctx.lineTo(shape.endx, shape.endy);
+            ctx.stroke();
+            ctx.closePath();
+        }
     });
 }
 
 async function getExistingShapes(roomId: string) {
-    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MDMyZGZmMS1hYmQ2LTQwZWYtYWE1ZC1iOTg1Mzk5ZTZiMTYiLCJpYXQiOjE3NzQ0NjY5MDYsImV4cCI6MTc3NDQ3MDUwNn0.ZQ5Xy6sS8duAbymlGZZFHO9FRo-UFYAyBOpmnf-_EjA";
+    const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiI0MDMyZGZmMS1hYmQ2LTQwZWYtYWE1ZC1iOTg1Mzk5ZTZiMTYiLCJpYXQiOjE3NzQ1MzY5NjgsImV4cCI6MTc3NDU0MDU2OH0.43T08b-8dkmDsL5xO6Lqo6ENG2srGHEbmOqdcRRSJLU";
     if (!token) {
         return [];
     }
